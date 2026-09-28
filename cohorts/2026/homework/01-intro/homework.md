@@ -180,3 +180,91 @@ Here’s what I learned 👇
 
 * Submit your results here: https://courses.datatalks.club/ml-zoomcamp-2026/homework/hw01
 * The numerical options are calculated from the pinned 2026 release. Use the value that matches your calculation.
+
+import numpy as np
+import pandas as pd
+
+print("--- Q1: Pandas Version ---")
+print(f"Pandas Version: {pd.__version__}\n")
+
+url = "https://raw.githubusercontent.com/DataTalksClub/machine-learning-zoomcamp/main/cohorts/2026/data/car_fuel_efficiency_2026.csv"
+df = pd.read_csv(url)
+
+print("--- Q2: Records Count ---")
+print(f"Number of records: {len(df)}\n")
+
+print("Dataset Columns:", df.columns.tolist())
+print("-" * 40)
+
+
+fuel_col = [c for c in df.columns if "fuel" in c][0]
+print(f"--- Q3: Fuel Types ({fuel_col}) ---")
+print(f"Unique fuel types: {df[fuel_col].unique()}")
+print(f"Number of unique fuel types: {df[fuel_col].nunique()}\n")
+
+
+print("--- Q4: Missing Values ---")
+missing_counts = df.isnull().sum()
+print(missing_counts)
+cols_with_missing = (missing_counts > 0).sum()
+print(f"Number of columns with missing values: {cols_with_missing}\n")
+
+
+region_col = [c for c in df.columns if "region" in c or "origin" in c][0]
+eff_col = [
+    c for c in df.columns if "eff" in c or "mpg" in c or "efficiency" in c
+][0]
+
+print(f"--- Q5: Max Fuel Efficiency for Asia ---")
+asia_cars = df[df[region_col].str.lower() == "asia"]
+max_eff = asia_cars[eff_col].max()
+print(f"Max fuel efficiency for Asia: {max_eff}\n")
+
+
+hp_col = [c for c in df.columns if "horse" in c or "hp" in c][0]
+print(f"--- Q6: Horsepower Median & Mode ---")
+median_hp_before = df[hp_col].median()
+mode_hp = df[hp_col].mode()[0]
+print(f"Median before fillna: {median_hp_before}")
+print(f"Most frequent value (mode): {mode_hp}")
+
+
+df_filled = df.copy()
+df_filled[hp_col] = df_filled[hp_col].fillna(mode_hp)
+median_hp_after = df_filled[hp_col].median()
+print(f"Median after fillna: {median_hp_after}")
+changed = median_hp_before != median_hp_after
+print(f"Has it changed? {changed}\n")
+
+
+print("--- Q7: Linear Regression Matrix Operations ---")
+weight_col = [c for c in df.columns if "weight" in c][0]
+year_col = [c for c in df.columns if "year" in c][0]
+
+
+asia_subset = df[df[region_col].str.lower() == "asia"]
+
+
+selected_cols = asia_subset[[weight_col, year_col]]
+
+
+subset_7 = selected_cols.head(7)
+
+X = subset_7.values
+
+
+XTX = np.dot(X.T, X)
+
+
+inv_XTX = np.linalg.inv(XTX)
+
+
+y = np.array([1100, 1300, 800, 900, 1000, 1100, 1200])
+
+
+w = np.dot(np.dot(inv_XTX, X.T), y)
+
+
+sum_w = np.sum(w)
+print(f"Result vector w: {w}")
+print(f"Sum of all elements of w: {sum_w:.4f}")
